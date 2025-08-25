@@ -104,9 +104,10 @@ def print_runtime(func):
     return wrapper
 
 
-def pretty_print(value):
+def pretty_print(*values):
     pp = pprint.PrettyPrinter(indent=2)
-    pp.pprint(value)
+    for v in values:
+        pp.pprint(v)
 
 
 def contains_alphanumeric(string):
