@@ -45,11 +45,11 @@ def extract_all_heading_paragraphs(
     input_file_path: str,
     ctx: typer.Context = None
 ) -> List[List[List[Word]]]:
-    all_lines, heading_lines = extract_all_heading_lines(ctx, input_file_path)
+    all_lines, heading_lines = extract_all_heading_lines(input_file_path, ctx)
     heading_paragraphs = group_lines_in_paragraphs(heading_lines)
     if ctx is not None and ctx.command.name == 'extract-all-heading-paragraphs':
         pretty_print(heading_paragraphs)
-    return heading_paragraphs
+    return all_lines, heading_paragraphs
 
 @app.command()
 def generate_toc(
@@ -57,7 +57,8 @@ def generate_toc(
     levels: int = typer.Argument(3),
     ctx: typer.Context = None,
 ) -> List[Tuple[int, Bookmark]]:
-    heading_paragraphs = extract_all_heading_paragraphs(ctx, input_file_path)
+    pdf_file = pdfplumber.open(input_file_path)
+    all_lines, heading_paragraphs = extract_all_heading_paragraphs(input_file_path, ctx)
     scored_paragraphs = score_paragraphs(all_lines, heading_paragraphs)
     top_scored_paragraphs = get_top_scored_paragraphs(scored_paragraphs, levels)
     bookmarks = generate_bookmarks(pdf_file, top_scored_paragraphs)
@@ -81,7 +82,7 @@ def add_bookmarks(
         input_path_start, _ = input_file_path.split(".pdf")
         output_file_path = f"{input_path_start}-out.pdf"
 
-    bookmarks = toc(input_file_path, levels)
+    bookmarks = generate_toc(input_file_path, levels)
 
     write_bookmarks(input_file_path, output_file_path, bookmarks)
 
